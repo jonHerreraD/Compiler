@@ -1,0 +1,2 @@
+gradosCen%, -52, 0, 0
+gradosFar%, -52, 0, 0

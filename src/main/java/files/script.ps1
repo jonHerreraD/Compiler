@@ -1,7 +1,8 @@
 # Abre los dos archivos de texto
-Start-Process notepad.exe "C:\Users\diazj\Desktop\Web\Automatas\entradagral.txt"
-Start-Process notepad.exe "C:\Users\diazj\Desktop\Web\Automatas\Automatas3.txt"
-
+Start-Process notepad.exe "C:\Users\diazj\Desktop\Compiler\src\main\java\files\prueba.txt"
+Start-Process notepad.exe "C:\Users\diazj\Desktop\Compiler\src\main\java\files\TablaTokens.txt"
+Start-Process notepad.exe "C:\Users\diazj\Desktop\Compiler\src\main\java\files\TablaSimbolos.txt"
+Start-Process notepad.exe "C:\Users\diazj\Desktop\Compiler\src\main\java\files\TablaDirecciones.txt"
 # Espera un momento para que las ventanas se abran
 Start-Sleep -Seconds 1
 

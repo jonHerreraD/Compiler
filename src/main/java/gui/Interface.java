@@ -4,6 +4,9 @@
  */
 package gui;
 
+import semantic.DirectionTable;
+import semantic.Semantic;
+import semantic.Symbol;
 import syntax.Component;
 import syntax.RegexValidator;
 import syntax.Syntax;
@@ -34,20 +37,25 @@ import javax.swing.JFileChooser;
 public class Interface extends javax.swing.JFrame {
 
     
-    String input;
+    //String input;
     RegexValidator validator = new RegexValidator();
     String[] inputList ;
     Tokens tokens = new Tokens();
-    int tokenNumber;
-    int position =-1;
+    //int tokenNumber;
+    //int position =-1;
     JFileChooser fileChooser;
     File selectedFile;
     ArrayList<String> lineList = new ArrayList<>();
     int positionLine = 1;
     List<Component> lexList = new ArrayList<>();
+    List<Component> lexList2 = new ArrayList<>();
     boolean error = false;
     Syntax syntax;
-    List<String> blancoList = new ArrayList<>();
+    Semantic semantic;
+    DirectionTable directionTable;
+    List<Symbol> symbolList = new ArrayList<>();
+    List<DirectionTable> directionTableList = new ArrayList<>();
+    //List<String> blancoList = new ArrayList<>();
     
     public Interface() {
         initComponents();
@@ -154,12 +162,28 @@ public class Interface extends javax.swing.JFrame {
                     positionLine++;
                 }
                 syntax = new Syntax();
+                lexList2.addAll(lexList);
         
                 if(syntax.checkSyntax(lexList)){
                   //openFile();
+
                   openFiles();
+
                 }else{
                     //openFile();
+                    semantic = new Semantic();
+                    semantic.getClassName(lexList2);
+                    semantic.checkVariables(lexList2,symbolList);
+                    directionTable = new DirectionTable();
+                    directionTable.createDirectionsTable(symbolList,directionTableList);
+                    for (Symbol symbol : symbolList){
+                        System.out.println(symbol.getId() + " " +symbol.getToken()+
+                                " "+symbol.getValue()+ " " +symbol.getContext());
+                    }
+                    semantic.checkAssignments(lexList2, symbolList);
+                    semantic.checkComparison(lexList2,symbolList);
+                    writeSymbolsTable(symbolList);
+                    writeDirectionsTable(directionTableList);
                     openFiles();
                     this.dispose();
                 }
@@ -189,7 +213,7 @@ public class Interface extends javax.swing.JFrame {
       
     public void writeFile(List<Component> lista) throws IOException{
         
-        PrintWriter pw = new PrintWriter(new FileWriter("Automatas3.txt"));
+        PrintWriter pw = new PrintWriter(new FileWriter("C:\\Users\\diazj\\Desktop\\Compiler\\src\\main\\java\\files\\TablaTokens.txt"));
         
             for(Component le : lista){
                 //pw.println(Arrays.asList(le.toString()));
@@ -200,6 +224,35 @@ public class Interface extends javax.swing.JFrame {
         
         
      }
+
+    public void writeSymbolsTable(List<Symbol> list) throws IOException{
+
+        PrintWriter pw = new PrintWriter(new FileWriter("C:\\Users\\diazj\\Desktop\\Compiler\\src\\main\\java\\files\\TablaSimbolos.txt"));
+
+        for(Symbol symbol : list){
+            //pw.println(Arrays.asList(le.toString()));
+            pw.println(symbol.getId()+", "+symbol.getToken()+", "+symbol.getValue()+", "+
+                    symbol.getType()+", "+symbol.getContext());
+            // pw.println(printOutputs(cadena,tokenNumber,position,positionLine));
+        }
+        pw.close();
+
+    }
+
+    public void writeDirectionsTable(List<DirectionTable> list) throws IOException{
+
+        PrintWriter pw = new PrintWriter(new FileWriter("C:\\Users\\diazj\\Desktop\\Compiler\\src\\main\\java\\files\\TablaDirecciones.txt"));
+
+        for(DirectionTable directionTable : list){
+            //pw.println(Arrays.asList(le.toString()));
+            pw.println(directionTable.getId()+", "+directionTable.getToken()+", "+directionTable.getLine()+", "+
+                    directionTable.getVci());
+            // pw.println(printOutputs(cadena,tokenNumber,position,positionLine));
+        }
+        pw.close();
+
+
+    }
     
     public void openFile(){
         String fileName = "Automatas1.txt";
@@ -212,7 +265,7 @@ public class Interface extends javax.swing.JFrame {
     }
 
     public void openFiles(){
-        String scriptPath = "C:\\Users\\diazj\\Desktop\\Compiler\\script.ps1";  // Ruta a tu script PowerShell
+        String scriptPath = "C:\\Users\\diazj\\Desktop\\Compiler\\src\\main\\java\\files\\script.ps1";  // Ruta a tu script PowerShell
         try {
             Process process = Runtime.getRuntime().exec("powershell.exe -ExecutionPolicy Bypass -File " + scriptPath);
             process.waitFor();  // Espera a que el script termine
@@ -238,7 +291,7 @@ public class Interface extends javax.swing.JFrame {
         tokenMap.put(validator::isRelationalOperator, tokens::relationalTokens);
         tokenMap.put(validator::isSpecialCharacter, tokens::specialCharacterTokens);
         tokenMap.put(validator::isArithmeticOperator, tokens::arithmeticTokens);
-        tokenMap.put(validator::isIdentifier, tokens::identifierTokens);
+        //tokenMap.put(validator::isIdentifier, tokens::identifierTokens);
         tokenMap.put(validator::isReservedWord, tokens::reservedWordTokens);
         tokenMap.put(validator::isLogicalOperator, tokens::logicTokens);
         tokenMap.put(validator::isLogicalValue, tokens::logicalValueTokens);
@@ -264,7 +317,9 @@ public class Interface extends javax.swing.JFrame {
                     lex = createComponent(s, -62, ps);
                 } else if (validator.isIntegerNumber(s)) {
                     lex = createComponent(s, -61, ps);
-                } else {
+                } else if (validator.isIdentifier(s)) {
+                    lex = createComponent(s, tokens.identifierTokens(s), ps);
+                }else {
                     error = true;
                     System.out.println("Error en línea " + ps + ". Componente no reconocido: " + s);
                     if (error) {
@@ -280,7 +335,13 @@ public class Interface extends javax.swing.JFrame {
     }
 
     private Component createComponent(String s, int tokenNumber, int ps) {
-        return new Component(s, tokenNumber, position, ps);
+        if(validator.isIdentifier(s)){
+            //System.out.println("Es un identificador: " + s);
+            return new Component(s, tokenNumber, -2, ps);
+        }else {
+            return new Component(s, tokenNumber, -1, ps);
+        }
+
     }
 
 

@@ -1,0 +1,2 @@
+gradosCen%, -52, 0, float, grados?
+gradosFar%, -52, 0, float, grados?
