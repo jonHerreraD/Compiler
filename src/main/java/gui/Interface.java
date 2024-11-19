@@ -172,20 +172,16 @@ public class Interface extends javax.swing.JFrame {
                 }else{
                     //openFile();
                     semantic = new Semantic();
-                    semantic.getClassName(lexList2);
-                    semantic.checkVariables(lexList2,symbolList);
-                    directionTable = new DirectionTable();
-                    directionTable.createDirectionsTable(symbolList,directionTableList);
-                    for (Symbol symbol : symbolList){
-                        System.out.println(symbol.getId() + " " +symbol.getToken()+
-                                " "+symbol.getValue()+ " " +symbol.getContext());
+
+                    if(semantic.isSemanticGood(lexList2,symbolList,directionTableList)){
+                        openFiles();
+                    }else {
+                        writeSymbolsTable(symbolList);
+                        writeDirectionsTable(directionTableList);
+                        writeSecondTokensTable(lexList2);
+                        openFiles();
+                        this.dispose();
                     }
-                    semantic.checkAssignments(lexList2, symbolList);
-                    semantic.checkComparison(lexList2,symbolList);
-                    writeSymbolsTable(symbolList);
-                    writeDirectionsTable(directionTableList);
-                    openFiles();
-                    this.dispose();
                 }
               
             } catch (IOException ex) {
@@ -224,6 +220,20 @@ public class Interface extends javax.swing.JFrame {
         
         
      }
+
+    public void writeSecondTokensTable(List<Component> list) throws IOException{
+
+        PrintWriter pw = new PrintWriter(new FileWriter("C:\\Users\\diazj\\Desktop\\Compiler\\src\\main\\java\\files\\TablaTokens2.txt"));
+
+        for(Component le : list){
+            //pw.println(Arrays.asList(le.toString()));
+            pw.println(le.getLex()+", "+le.getToken()+", "+le.getSymbolPosition()+", "+le.getLine());
+            // pw.println(printOutputs(cadena,tokenNumber,position,positionLine));
+        }
+        pw.close();
+
+
+    }
 
     public void writeSymbolsTable(List<Symbol> list) throws IOException{
 

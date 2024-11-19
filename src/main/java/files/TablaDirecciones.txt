@@ -1,2 +1,1 @@
-gradosCen%, -52, 0, 0
-gradosFar%, -52, 0, 0
+esPrimo?, -55, 0, 0

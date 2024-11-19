@@ -12,11 +12,16 @@ public class Semantic {
     String context ="";
     int bodyBegins = 0;
 
+    Component programName;
+
+
+
 
     public void getClassName(List<Component> componentList){
         int i = 0;
         if(componentList.get(i).getToken() == -1){
             context = componentList.get(i+1).getLex();
+            programName = componentList.get(i+1);
         }
     }
     public void checkVariables(List<Component> componentList, List<Symbol> symbolList){
@@ -31,13 +36,27 @@ public class Semantic {
 
     public void getVariables(List<Component> componentList, List<Symbol> symbolList, int index){
         int i = index;
+        int pos = 0;
         while(componentList.get(i).getToken() != -2){
             if(validator.isIdentifier(componentList.get(i).getLex())){
                 Component component = componentList.get(i);
                 String type = getIdentifierType(component);
                 Symbol symbol = new Symbol(component.getLex(), component.getToken(),
                         0,type, context);
-                symbolList.add(symbol);
+                if(findSymbolInTable(symbol.getId(),symbolList) != null){
+                    System.out.println("Error: Variable " + symbol.getId() + " ya ha sido declarada");
+                    break;
+                }else{
+                    symbolList.add(symbol);
+                    for(int j = i; j<componentList.size(); j++){
+                        if(componentList.get(j).getLex().equals(component.getLex())){
+                            componentList.get(j
+                            ).setSymbolPosition(pos);
+                        }
+                    }
+
+                    pos++;
+                }
             }
             i++;
         }
@@ -60,8 +79,8 @@ public class Semantic {
         return "null";
     }
 
-    public void checkAssignments(List<Component> componentList, List<Symbol> symbolList){
-        int i = bodyBegins +1;
+    public void isAssignment(List<Component> componentList, List<Symbol> symbolList, IndexErrorWrapper indexErrorWrapper){
+        int i = indexErrorWrapper.index;
         ArrayList<Component> assignmentLine = new ArrayList<>();
         while(validator.isIdentifier(componentList.get(i).getLex())){
             if (validator.isIdentifier(componentList.get(i).getLex())
@@ -71,9 +90,11 @@ public class Semantic {
                     i++;
                 }
                 i++;
+                indexErrorWrapper.index = i;
                 Component leftIdentifier = assignmentLine.get(0);
                 Symbol leftSymbol = findSymbolInTable(leftIdentifier.getLex(), symbolList);
                 if (leftSymbol == null) {
+                    indexErrorWrapper.error = true;
                     System.out.println("Error: variable '" + leftIdentifier.getLex() + "' no declarada.");
                     return; // Error, variable no encontrada
                 }
@@ -91,6 +112,7 @@ public class Semantic {
                     }else {
                         String rightType = getComponentType(rightComponent,symbolList);
                         if(!leftType.equals(rightType)){
+                            indexErrorWrapper.error = true;
                             System.out.println("Error: tipo incompatible en la asignación de '" + rightComponent.getLex() +
                                     "'. Se esperaba tipo " + leftType + " pero se encontró " + rightType);
                             return; // Error, tipo no compatible
@@ -98,6 +120,8 @@ public class Semantic {
                     }
                 }
                 assignmentLine.clear();
+            }else{
+                i++;
             }
         }
     }
@@ -121,14 +145,16 @@ public class Semantic {
             return "float";
         } else if (validator.isConstantString(component.getLex())) {
             return "string";
+        }  else if (validator.isLogicalValue(component.getLex())) {
+            return "logic";
         }
         return "desconocido";
     }
 
-    public void checkComparison(List<Component> componentList, List<Symbol> symbolList){
-        int i = bodyBegins +1;
+    public void isComparison(List<Component> componentList, List<Symbol> symbolList,IndexErrorWrapper indexErrorWrapper){
+        int i = indexErrorWrapper.index;
         ArrayList<Component> comparisonLine = new ArrayList<>();
-
+        /*
         while(componentList.get(i).getToken() != -6 ||
                 componentList.get(i).getToken() != -8 ||
                 componentList.get(i).getToken() != -10){
@@ -144,6 +170,8 @@ public class Semantic {
 
         }
 
+         */
+
         if(componentList.get(i).getToken() == -6 ||
                 componentList.get(i).getToken() == -8 ||
                 componentList.get(i).getToken() == -10){
@@ -151,6 +179,8 @@ public class Semantic {
                 comparisonLine.add(componentList.get(i));
                 i++;
             }
+
+            indexErrorWrapper.index = i;
 
             int j = 0;
             while(validator.isReservedWord(comparisonLine.get(j).getLex()) ||
@@ -170,12 +200,93 @@ public class Semantic {
                 }else {
                     String rightType = getComponentType(rightComponent,symbolList);
                     if(!leftType.equals(rightType)){
+                        indexErrorWrapper.error = true;
                         System.out.println("Error: tipo incompatible en la comparacion de '" + rightComponent.getLex() +
                                 "'. Se esperaba tipo " + leftType + " pero se encontró " + rightType);
                         return; // Error, tipo no compatible
                     }
                 }
             }
+        }
+    }
+
+    public boolean isSemanticGood(List<Component>componentList,
+                                 List<Symbol> symbolList, List<DirectionTable> directionTableList){
+        IndexErrorWrapper indexErrorWrapper = new IndexErrorWrapper(0,false);
+        getClassName(componentList);
+        checkVariables(componentList,symbolList);
+        DirectionTable directionTable = new DirectionTable();
+        directionTable.createDirectionsTable(programName,directionTableList);
+
+        indexErrorWrapper.index = bodyBegins + 1;
+        if (indexErrorWrapper.error != true){
+            isBodyGood(componentList,symbolList,indexErrorWrapper);
+        }else{
+            return indexErrorWrapper.error;
+        }
+
+        return indexErrorWrapper.error;
+    }
+
+    private void isBodyGood(List<Component> componentList, List<Symbol> symbolList,IndexErrorWrapper indexErrorWrapper) {
+
+        int blockLevel = 0; // Nivel de bloque para distinguir entre distintos bloques begin-end
+
+        while (indexErrorWrapper.index < componentList.size() &&
+                componentList.get(indexErrorWrapper.index).getToken() != -3 && // no ha encontrado el end final
+                indexErrorWrapper.error != true) {
+
+
+            // Procesa asignaciones y comparaciones
+            isAssignment(componentList, symbolList, indexErrorWrapper);
+            isComparison(componentList, symbolList, indexErrorWrapper);
+
+            // Si se detecta un error, se interrumpe el ciclo
+            if (indexErrorWrapper.error ||
+                    componentList.getLast().equals(componentList.get(indexErrorWrapper.index))) {
+                break;
+            }
+
+            // Avanza al siguiente componente
+            indexErrorWrapper.index++;
+            Component currentComponent = componentList.get(indexErrorWrapper.index);
+            // Detecta el inicio de un bloque
+            if (currentComponent.getToken() == -2) { // Suponiendo que BEGIN_TOKEN es el token de 'begin'
+                blockLevel++;
+            }
+            // Detecta el final de un bloque
+            if (currentComponent.getToken() == -3) { // Suponiendo que END_TOKEN es el token de 'end'
+                if (blockLevel > 0) {
+                    blockLevel--; // Reduce el nivel del bloque al encontrar un 'end'
+                    indexErrorWrapper.index++;
+                } else {
+                    break; // Si blockLevel es 0, estamos al final del programa
+                }
+            }
+        /*
+        while(componentList.get(indexErrorWrapper.index).getToken() != -3 &&
+                !componentList.getLast().equals(componentList.get(indexErrorWrapper.index)) &&
+                indexErrorWrapper.error != true){
+            isAssignment(componentList,symbolList,indexErrorWrapper);
+            isComparison(componentList,symbolList,indexErrorWrapper);
+            if (indexErrorWrapper.error){
+                break;
+            }
+
+
+            indexErrorWrapper.index++;
+            if(!componentList.getLast().equals(componentList.get(indexErrorWrapper.index))){
+                if (componentList.get(indexErrorWrapper.index).getToken() == -3){
+                    indexErrorWrapper.index++;
+                }else {
+
+                }
+            }else{
+                break;
+            }
+
+
+         */
         }
     }
 }

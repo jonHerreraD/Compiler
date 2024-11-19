@@ -7,8 +7,8 @@ bool : cinco$  ;
   
 begin
 
-uno& :=  10.3 + ( 39 * dos& ) ;
-cinco$  := ( uno& <= 10 ) ; 
+uno& :=  10 + ( 39 * dos& ) ;
+cinco$  := true ;
 
 if ( uno& == 10 ) then
 begin
@@ -29,7 +29,7 @@ dos& := 1 ;
 
 while ( dos& >  5 ) do
 begin
-dos& := dos& + 1 ; 
+dos& := dos& + 1.2 ;
 end
 
 write ( dos& ) ; cinco$ := false ;

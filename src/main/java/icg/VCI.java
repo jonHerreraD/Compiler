@@ -42,24 +42,25 @@ public class VCI {
          */
     }
 
-    public int setPriorityValue(Component component){
+    public void setPriorityValue(VCI vci){
+        Component component = vci.getComponent();
         if (component.getToken() == -42){
-            return 10;
+            vci.setValue(10);
         } else if (component.getToken() == -41) {
-            return 20;
+            vci.setValue(20);
         } else if (component.getToken() == -43) {
-            return 30;
+            vci.setValue(30);
         } else if (validator.isRelationalOperator(component.getLex())) {
-            return 40;
+            vci.setValue(40);
         } else if (component.getToken() == -24 ||
         component.getToken() == -25) {
-            return 50;
+            vci.setValue(50);
         } else if (component.getToken() == -21 ||
                 component.getToken() == -22 ||
                 component.getToken() == -27) {
-            return 60;
+            vci.setValue(60);
         }else {
-            return 0;
+             vci.setValue(0);
         }
     }
 }

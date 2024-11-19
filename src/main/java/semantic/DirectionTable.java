@@ -1,5 +1,7 @@
 package semantic;
 
+import syntax.Component;
+
 import java.util.List;
 
 public class DirectionTable {
@@ -19,12 +21,19 @@ public class DirectionTable {
         this.vci = vci;
     }
 
-    public void createDirectionsTable(List<Symbol> symbolList, List<DirectionTable> directionTableList){
+    public void createDirectionsTable(Component component, List<DirectionTable> directionTableList){
+        /*
+
         for(Symbol symbol : symbolList){
             DirectionTable directionTable = new DirectionTable(symbol.getId(), symbol.getToken(),
                     0,0);
             directionTableList.add(directionTable);
         }
+
+         */
+        DirectionTable directionTable = new DirectionTable(component.getLex(), component.getToken(),
+                0,0);
+        directionTableList.add(directionTable);
     }
 
     public String getId() {

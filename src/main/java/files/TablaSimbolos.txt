@@ -1,2 +1,4 @@
-gradosCen%, -52, 0, float, grados?
-gradosFar%, -52, 0, float, grados?
+numero&, -51, 0, int, esPrimo?
+primo$, -54, 0, logic, esPrimo?
+i&, -51, 0, int, esPrimo?
+num&, -51, 0, int, esPrimo?

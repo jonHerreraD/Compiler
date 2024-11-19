@@ -3,6 +3,7 @@ Start-Process notepad.exe "C:\Users\diazj\Desktop\Compiler\src\main\java\files\p
 Start-Process notepad.exe "C:\Users\diazj\Desktop\Compiler\src\main\java\files\TablaTokens.txt"
 Start-Process notepad.exe "C:\Users\diazj\Desktop\Compiler\src\main\java\files\TablaSimbolos.txt"
 Start-Process notepad.exe "C:\Users\diazj\Desktop\Compiler\src\main\java\files\TablaDirecciones.txt"
+Start-Process notepad.exe "C:\Users\diazj\Desktop\Compiler\src\main\java\files\TablaTokens2.txt"
 # Espera un momento para que las ventanas se abran
 Start-Sleep -Seconds 1
 
