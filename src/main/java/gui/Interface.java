@@ -4,6 +4,8 @@
  */
 package gui;
 
+import icg.IntermediateCode;
+import icg.VCI;
 import semantic.DirectionTable;
 import semantic.Semantic;
 import semantic.Symbol;
@@ -55,6 +57,10 @@ public class Interface extends javax.swing.JFrame {
     DirectionTable directionTable;
     List<Symbol> symbolList = new ArrayList<>();
     List<DirectionTable> directionTableList = new ArrayList<>();
+
+    IntermediateCode intermediateCode;
+
+    List<VCI> vciList = new ArrayList<>();
     //List<String> blancoList = new ArrayList<>();
     
     public Interface() {
@@ -179,6 +185,23 @@ public class Interface extends javax.swing.JFrame {
                         writeSymbolsTable(symbolList);
                         writeDirectionsTable(directionTableList);
                         writeSecondTokensTable(lexList2);
+
+                        intermediateCode = new IntermediateCode();
+                        intermediateCode.buildVCI(lexList2,vciList);
+                        System.out.println("VCI");
+                        System.out.println("------------------------------");
+                        int count = 0;
+                        for (VCI vci1 : vciList){
+                            System.out.print(vci1.getComponent().getLex() + ", ");
+                            count++;
+                            if(count % 10 == 0){
+                                System.out.println();
+                            }
+                        }
+                        System.out.println();
+                        System.out.print("------------------------------");
+
+
                         openFiles();
                         this.dispose();
                     }

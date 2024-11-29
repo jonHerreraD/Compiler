@@ -115,13 +115,127 @@ public class Syntax {
             }
         }
     }
-    
+
+    public boolean checkIf(List<Component> componentList) {
+        if (componentList.get(0).getToken() == -6) { // if
+            componentList.remove(0);
+
+            if (componentList.get(0).getLex().equals("(")) { // (
+                componentList.remove(0);
+
+                if (checkExpression(componentList)) { // Validar expresión dentro de los paréntesis
+                    if (componentList.get(0).getLex().equals(")")) { // )
+                        componentList.remove(0);
+
+                        if (componentList.get(0).getToken() == -16) { // then
+                            componentList.remove(0);
+
+                            if (componentList.get(0).getToken() == -2) { // begin
+                                componentList.remove(0);
+
+                                while (componentList.get(0).getToken() != -3) { // end
+                                    if (assignment(componentList) ||
+                                            checkIf(componentList) ||
+                                            checkWhile(componentList) ||
+                                            checkRepeat(componentList) ||
+                                            checkWrite(componentList) ||
+                                            checkRead(componentList)) {
+                                        // Continúa verificando declaraciones
+                                    } else {
+                                        System.out.println("Error en línea: " + componentList.get(0).getLine() +
+                                                " declaración no válida dentro del bloque.");
+                                        error = true;
+                                        return false;
+                                    }
+                                }
+
+                                if (componentList.get(0).getToken() == -3) { // end
+                                    componentList.remove(0);
+                                    checkElse(componentList);
+                                    return true;
+                                }
+                            } else {
+                                System.out.println("Error en línea: " + componentList.get(0).getLine() +
+                                        " se esperaba: begin");
+                                error = true;
+                            }
+                        } else {
+                            System.out.println("Error en línea: " + componentList.get(0).getLine() +
+                                    " se esperaba: then");
+                            error = true;
+                        }
+                    } else {
+                        System.out.println("Error en línea: " + componentList.get(0).getLine() +
+                                " se esperaba: )");
+                        error = true;
+                    }
+                } else {
+                    System.out.println("Error en línea: " + componentList.get(0).getLine() +
+                            " expresión inválida en el if.");
+                    error = true;
+                }
+            } else {
+                System.out.println("Error en línea: " + componentList.get(0).getLine() +
+                        " se esperaba: (");
+                error = true;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean checkExpression(List<Component> componentList) {
+        if (checkSimpleExpression(componentList)) {
+            while (!componentList.isEmpty() &&
+                    validator.isLogicalOperator(componentList.get(0).getLex())) {
+                componentList.remove(0); // Elimina el operador lógico
+                if (!checkSimpleExpression(componentList)) {
+                    System.out.println("Error en línea: "
+                            + componentList.get(0).getLine() + " expresión lógica incompleta.");
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            System.out.println("Error en línea: "
+                    + componentList.get(0).getLine() + " expresión inválida en el if.");
+            return false;
+        }
+    }
+
+    public boolean checkSimpleExpression(List<Component> componentList) {
+        if (validator.isIdentifier(componentList.get(0).getLex()) ||
+                validator.isDecimalNumber(componentList.get(0).getLex()) ||
+                validator.isIntegerNumber(componentList.get(0).getLex())) {
+            componentList.remove(0); // Consume el identificador o número
+            while (!componentList.isEmpty() &&
+                    (validator.isArithmeticOperator(componentList.get(0).getLex()) ||
+                            validator.isRelationalOperator(componentList.get(0).getLex()))) {
+                componentList.remove(0); // Elimina el operador
+                if (!validator.isIdentifier(componentList.get(0).getLex()) &&
+                        !validator.isDecimalNumber(componentList.get(0).getLex()) &&
+                        !validator.isIntegerNumber(componentList.get(0).getLex()) &&
+                !validator.isLogicalValue(componentList.get(0).getLex())) {
+                    System.out.println("Error en línea: "
+                            + componentList.get(0).getLine() + " valor esperado tras operador.");
+                    return false;
+                }
+                componentList.remove(0); // Consume el identificador o número
+            }
+            return true;
+        } else {
+            System.out.println("Error en línea: "
+                    + componentList.get(0).getLine() + " expresión inválida.");
+            return false;
+        }
+    }
+
+    /*
     public boolean checkIf(List<Component> componentList){
         if(componentList.get(0).getToken() == -6){
             componentList.remove(0);
             if(componentList.get(0).getLex().equals("(")){
                 componentList.remove(0);
-                
                 if(validator.isIdentifier(componentList.get(0).getLex()) ||
                         validator.isDecimalNumber(componentList.get(0).getLex())||
                         validator.isIntegerNumber(componentList.get(0).getLex())){
@@ -196,6 +310,8 @@ public class Syntax {
     }
         return false;
     }
+
+     */
     
     public boolean checkWhile(List<Component> componentList){
         if(componentList.get(0).getToken() == -8){

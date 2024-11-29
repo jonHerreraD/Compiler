@@ -1,4 +1,11 @@
-numero&, -51, 0, int, esPrimo?
-primo$, -54, 0, logic, esPrimo?
-i&, -51, 0, int, esPrimo?
-num&, -51, 0, int, esPrimo?
+i&, -51, 0, int, vci?
+f&, -51, 0, int, vci?
+n&, -51, 0, int, vci?
+X&, -51, 0, int, vci?
+Y&, -51, 0, int, vci?
+A&, -51, 0, int, vci?
+B&, -51, 0, int, vci?
+C&, -51, 0, int, vci?
+m&, -51, 0, int, vci?
+par&, -51, 0, int, vci?
+non&, -51, 0, int, vci?

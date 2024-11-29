@@ -212,7 +212,7 @@ public class Semantic {
 
     public boolean isSemanticGood(List<Component>componentList,
                                  List<Symbol> symbolList, List<DirectionTable> directionTableList){
-        IndexErrorWrapper indexErrorWrapper = new IndexErrorWrapper(0,false);
+        IndexErrorWrapper indexErrorWrapper = new IndexErrorWrapper(0,false,0);
         getClassName(componentList);
         checkVariables(componentList,symbolList);
         DirectionTable directionTable = new DirectionTable();
